@@ -2,13 +2,17 @@ package co.com.popstyle.usuarios.service.impl;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import co.com.popstyle.usuarios.dto.request.UsuarioRequestDto;
+import co.com.popstyle.usuarios.dto.response.PerfilResponseDto;
 import co.com.popstyle.usuarios.dto.response.UsuarioResponseDto;
+import co.com.popstyle.usuarios.entity.PerfilEntity;
 import co.com.popstyle.usuarios.entity.UsuarioEntity;
 import co.com.popstyle.usuarios.repository.IUsuarioRepository;
 import co.com.popstyle.usuarios.service.IUsuarioService;
@@ -26,29 +30,51 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	public boolean existeUsuario(Long idUsuario) {
 
 		UsuarioEntity usuario = usuarioRepositorio.findById(idUsuario).orElse(null);
-		if ( usuario == null)
+		if (usuario == null)
 			return true;
 
 		return false;
 
 	}
-	
+
 	@Override
 	public UsuarioResponseDto getUsuarioEmail(String email) {
 		UsuarioEntity usuario = usuarioRepositorio.findByEmail(email);
 
 		if (usuario != null) {
-			return mapToUsuDto(usuario);
+			
+			UsuarioResponseDto usuRes = new UsuarioResponseDto();
+			
+			usuRes.setNombresApellidos(usuario.getNombresApellidos());
+			usuRes.setCelular(usuario.getCelular());
+			usuRes.setEmail(usuario.getEmail());
+			usuRes.setEstado(usuario.getEstado());
+			usuRes.setIdUsuario(usuario.getIdUsuario());
+			
+			Set<PerfilEntity> perfiles = usuario.getPerfiles();
+			
+			if(perfiles != null) {
+				usuRes.setPerfiles(
+						perfiles
+						.stream()
+						.map(a -> mapToPerDto(a))
+						.collect(Collectors.toSet())
+						);
+			}else {
+				usuRes.setPerfiles(null);
+			}
+			
+			return usuRes;
 		}
 		return null;
 	}
 
 	@Override
-	public UsuarioResponseDto getUsuarioEmailDto(String email) {
+	public UsuarioResponseDto getRecuperarPassword(String email) {
 
 		String password = "";
 		UsuarioEntity usuario = usuarioRepositorio.findByEmail(email);
-		
+
 		if (usuario != null) {
 
 			password = generarPassword();
@@ -63,7 +89,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 			System.out.println("enviar correo al usuario");
 
 			return mapToUsuDto(usuario);
-			
+
 		}
 
 		return null;
@@ -71,16 +97,15 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 	@Override
 	public UsuarioRequestDto guardarUsuario(UsuarioRequestDto usuarioDto) {
-		
-		//	Falta la validación si existe el correo
-		
+
+		// Falta la validación si existe el correo
+
 		UsuarioEntity existeEmail = usuarioRepositorio.findByEmail(usuarioDto.getEmail());
 
 		UsuarioEntity usuEntity = new UsuarioEntity();
-		if(existeEmail == null) {
+		if (existeEmail == null) {
 			usuEntity.setFechaCreacion(LocalDateTime.now());
-			usuEntity.setNombres(usuarioDto.getNombres().toUpperCase());
-			usuEntity.setApellidos(usuarioDto.getApellidos().toUpperCase());
+			usuEntity.setNombresApellidos(usuarioDto.getNombresApellidos().toUpperCase());
 			usuEntity.setEstado((usuarioDto.getEstado().toUpperCase()).trim());
 			usuEntity.setEmail((usuarioDto.getEmail().toLowerCase()).trim());
 			usuEntity.setCelular((usuarioDto.getCelular()).trim());
@@ -88,8 +113,8 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 			if (usuarioRepositorio.save(usuEntity) == null)
 				return null;
-			
-		}else {
+
+		} else {
 			return null;
 		}
 
@@ -99,34 +124,42 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	@Override
 	public UsuarioRequestDto actualizarUsuario(UsuarioRequestDto usuarioDto) {
 
+		boolean actualizar = false;
 		UsuarioEntity usuarioEntity = usuarioRepositorio.findById(usuarioDto.getIdUsuario()).orElse(null);
 
 		if (usuarioEntity != null) {
-			
-			UsuarioEntity usuarioEntityEmail= usuarioRepositorio.findByEmail(usuarioDto.getEmail());
 
-			if(usuarioEntityEmail == null) {
-				usuarioEntity.setNombres(usuarioDto.getNombres().toUpperCase());
-				usuarioEntity.setApellidos(usuarioDto.getApellidos().toUpperCase());
-				usuarioEntity.setEstado(usuarioDto.getEstado().toUpperCase());
-				usuarioEntity.setEmail(usuarioDto.getEmail().toLowerCase());
-				usuarioEntity.setCelular(usuarioDto.getCelular());
-				usuarioEntity.setPassword(usuarioDto.getPassword());
+			UsuarioEntity emailEntity = usuarioRepositorio.findByEmail(usuarioDto.getEmail());
 
-				if (usuarioRepositorio.save(usuarioEntity) != null)
-					return usuarioDto;
-				
-			}
+			if (emailEntity != null) {
+
+				if (emailEntity.getIdUsuario() == (usuarioEntity.getIdUsuario()))
+					actualizar = true;
+
+			} else
+				actualizar = true;
+
+		}
+
+		if (actualizar) {
+			usuarioEntity.setNombresApellidos(usuarioDto.getNombresApellidos().toUpperCase());
+			usuarioEntity.setEstado(usuarioDto.getEstado().toUpperCase());
+			usuarioEntity.setEmail(usuarioDto.getEmail().toLowerCase());
+			usuarioEntity.setCelular(usuarioDto.getCelular());
+			usuarioEntity.setPassword(usuarioDto.getPassword());
+
+			if (usuarioRepositorio.save(usuarioEntity) != null)
+				return usuarioDto;
 
 		}
 		return null;
 	}
-	
+
 	private String generarPassword() {
 
 		int longitudPassword = 10;
 
-		String caracteresPermitidos = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?";
+		String caracteresPermitidos = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&/()=?¿*.,-+";
 
 		SecureRandom random = new SecureRandom();
 		StringBuilder sb = new StringBuilder(longitudPassword);
@@ -142,6 +175,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 	private UsuarioResponseDto mapToUsuDto(UsuarioEntity usuarioEntity) {
 		return modelMapper.map(usuarioEntity, UsuarioResponseDto.class);
+	}
+	
+	private PerfilResponseDto mapToPerDto(PerfilEntity perfilEntity) {
+		return modelMapper.map(perfilEntity, PerfilResponseDto.class);
 	}
 
 }

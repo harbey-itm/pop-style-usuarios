@@ -8,7 +8,7 @@ public interface IUsuarioService {
 	
 	boolean existeUsuario(Long idUsuario);
 	UsuarioResponseDto getUsuarioEmail(String email);
-	UsuarioResponseDto getUsuarioEmailDto(String email);
+	UsuarioResponseDto getRecuperarPassword(String email);
 	UsuarioRequestDto guardarUsuario(UsuarioRequestDto usuarioDto);
 	UsuarioRequestDto actualizarUsuario(UsuarioRequestDto usuarioDto);
 }

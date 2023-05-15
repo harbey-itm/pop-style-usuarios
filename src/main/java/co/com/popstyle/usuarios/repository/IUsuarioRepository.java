@@ -10,7 +10,7 @@ import co.com.popstyle.usuarios.entity.UsuarioEntity;
 public interface IUsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
 
 	
-	public UsuarioEntity findByNombres(String nombre);
+	public UsuarioEntity findByNombresApellidos(String nombre);
 	
 	@Query("select a from UsuarioEntity a where a.idUsuario = ?1")
 	public UsuarioEntity findByIdUsuario(Long idUsuario);

@@ -1,8 +1,7 @@
 package co.com.popstyle.usuarios.dto.response;
 
-import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.HashSet;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,11 +15,11 @@ import lombok.ToString;
 public class UsuarioResponseDto {
 
 	private Long idUsuario;
-	private String nombres;
-	private String apellidos;
+	private String nombresApellidos;
 	private String email;
 	private String celular;
 	private String estado;	
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime fechaCreacion;	
+	//@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	//private LocalDateTime fechaCreacion;	
+	private Set<PerfilResponseDto> perfiles = new HashSet<PerfilResponseDto>(); 
 }

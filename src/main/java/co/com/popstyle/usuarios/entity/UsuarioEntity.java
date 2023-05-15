@@ -2,13 +2,19 @@ package co.com.popstyle.usuarios.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -37,10 +43,7 @@ public class UsuarioEntity implements Serializable{
 	private Long idUsuario;
 	
 	@Column(name = "nombres")
-	private String nombres;
-	
-	@Column(name = "apellidos")
-	private String apellidos;
+	private String nombresApellidos;
 	
 	@Column(name = "email")
 	private String email;
@@ -56,6 +59,10 @@ public class UsuarioEntity implements Serializable{
 	
 	@Column(name="fechacreacion")
 	private LocalDateTime fechaCreacion;
+	
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "usuarios_perfiles", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "perfil_id"))
+	private Set<PerfilEntity> perfiles = new HashSet<>();
 
 
 }

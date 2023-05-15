@@ -16,13 +16,9 @@ public class UsuarioRequestDto {
 
 	private Long idUsuario;
 	
-	@NotBlank(message = "El campo: nombre no puede estar vacio")
-	@Size(min=8, max = 255, message = "El campo: nombres debe tener un tamaño entre 8 y 255 caracteres")
-	private String nombres;
-	
-	@NotBlank(message = "El campo: apellidos no puede estar vacio")
-	@Size(min=8, max = 255, message = "El campo: apellidos debe tener un tamaño entre 8 y 255 caracteres")
-	private String apellidos;
+	@NotBlank(message = "El campo: nombre y apellidos no puede estar vacio")
+	@Size(min=8, max = 255, message = "El campo: nombres y apellidos debe tener un tamaño entre 8 y 255 caracteres")
+	private String nombresApellidos;
 	
 	@NotBlank(message = "El campo: estado no puede estar vacio")
 	@Size(min=1, max = 5, message = "El campo: estado debe tener un tamaño entre 1 y 5 caracteres")

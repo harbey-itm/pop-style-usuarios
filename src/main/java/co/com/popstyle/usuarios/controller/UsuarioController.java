@@ -1,5 +1,8 @@
 package co.com.popstyle.usuarios.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,30 +28,48 @@ public class UsuarioController<T> {
 	@GetMapping(value = "/getUsuarios")
 	public String getUsuarios() {
 		System.out.println("Ok Usuarios");
-//		public List<UsuarioResponseDto> getUsuarios() {
-		return "Ok Usuarios";
-		// return usuarioServicio.getUsuarios();
+		
+		int a = 5, b = 0;
+		return a/b+"Ok Usuarios"; // return
+
 	}
 
+	@SuppressWarnings("unchecked")
 	@GetMapping(value = "/getUsuarioEmail/{email}/")
-	public UsuarioResponseDto getUsuarioEmail(@PathVariable String email) {
+	public RespuestaObjetosJson<T> getUsuarioEmail(@PathVariable String email) {
 
-		return usuarioService.getUsuarioEmail(email);
+		UsuarioResponseDto usuarioDto = usuarioService.getUsuarioEmail(email);
+
+		if (usuarioDto != null) {
+			List<T> usuario = new ArrayList<T>();
+			usuario.add((T) usuarioDto);
+
+			return (new RespuestaObjetosJson<T>(new RespuestaDto(true, "", ""), usuario));
+		}
+
+		return (new RespuestaObjetosJson<T>(
+				new RespuestaDto(false, "El usuario con email: " + email + " NO existe en la Base de Datos !!!", ""),
+				null));
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@GetMapping(value = "/recuperarPassword/{email}/")
-	public RespuestaObjetosJson<T>  recuperarPassword(@PathVariable String email) {
-		
-		usuarioService.getUsuarioEmailDto(email);
-		
-		if (usuarioService.getUsuarioEmailDto(email) != null)
-			return (new RespuestaObjetosJson<T>(new RespuestaDto(true,
-					"Se reestabeció la contraseña del usuario con el correo: " +email+ "correctamente", ""), null));
+	public RespuestaObjetosJson<T> recuperarPassword(@PathVariable String email) {
 
-		return (new RespuestaObjetosJson<T>(new RespuestaDto(false, "No se pudo reestablecer la contraseña del usuario con el correo: "+email, ""), null));
-		
-		
+		UsuarioResponseDto usuarioDto = usuarioService.getRecuperarPassword(email);
+
+		if (usuarioDto != null) {
+			List<UsuarioResponseDto> usuarios = new ArrayList<UsuarioResponseDto>();
+			usuarios.add(usuarioDto);
+			return (new RespuestaObjetosJson<T>(
+					new RespuestaDto(true,
+							"Se reestabeció la contraseña del usuario con el correo: " + email + "correctamente", ""),
+					(List<T>) usuarios));
+		}
+		return (new RespuestaObjetosJson<T>(new RespuestaDto(false,
+				"No se pudo reestablecer la contraseña del usuario con el correo: " + email, ""), null));
+
 	}
 
 	@PostMapping(value = "/registrarUsuario")
@@ -78,12 +99,16 @@ public class UsuarioController<T> {
 					"El usuario " + usuarioDto.getIdUsuario() + " no existe en la base de datos.", ""), null));
 		}
 
-		if (usuarioService.actualizarUsuario(usuarioDto) != null)
+		if (usuarioService.actualizarUsuario(usuarioDto) != null) {
 			return (new RespuestaObjetosJson<T>(new RespuestaDto(true,
 					"El usuario " + usuarioDto.getIdUsuario() + " se actualizó correctamente", ""), null));
-
-		return (new RespuestaObjetosJson<T>(new RespuestaDto(false, "El usuario: " + usuarioDto.getIdUsuario()
-				+ " con email " + usuarioDto.getEmail() + " no se pudo actualizar porque el correo: "+usuarioDto.getEmail()+" ya esta asignado a otro usuario !!!", ""), null));
+		} else {
+			return (new RespuestaObjetosJson<T>(new RespuestaDto(false,
+					"El usuario: " + usuarioDto.getIdUsuario() + " con email " + usuarioDto.getEmail()
+							+ " no se pudo actualizar porque el correo: " + usuarioDto.getEmail()
+							+ " ya esta asignado a otro usuario !!!",
+					""), null));
+		}
 	}
 
 }
